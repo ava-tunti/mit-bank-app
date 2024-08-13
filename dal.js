@@ -150,18 +150,108 @@
 // module.exports = { create, findOne, find, update, all };
 //--
 
-const MongoClient = require('mongodb').MongoClient;
-const url = process.env.MONGODB_URI || "mongodb://localhost:27017";
-let db = null;
+// const MongoClient = require('mongodb').MongoClient;
+// const url = process.env.MONGODB_URI || "mongodb://localhost:27017";
+// let db = null;
+
+// const { MongoClient } = require('mongodb');
+
+// const client = new MongoClient(uri);
+
+// async function connectToDatabase() {
+//   try {
+//     await client.connect();
+//     console.log("Connected successfully to MongoDB");
+//   } catch (error) {
+//     console.error("Failed to connect to MongoDB", error);
+//   }
+// }
+
+// connectToDatabase();
+
+// // Use this client to access the database
+// const db = client.db('fullbank');
+
+// // create user account using the collection.insertOne function
+// function create(name, email, password) {
+//     // TODO: populate this function based off the video
+//     return new Promise((resolve, reject) => {
+//         const collection = db.collection('users');
+//         const doc = {name, email, password, balance:0};
+//         collection.insertOne(doc, {w:1}, function(err, result) {
+//             err ? reject(err) : resolve(doc);
+//         });
+//     }) 
+// }
+
+// // find user account 
+// function find(email) {
+//     return new Promise((resolve, reject) => {
+//         const customers = db
+//             .collection('users')
+//             .find({ email: email })
+//             .toArray(function (err, docs) {
+//                 err ? reject(err) : resolve(docs);
+//             });
+//     })
+// }
+
+// // find user account
+// function findOne(email) {
+//     return new Promise((resolve, reject) => {
+//         const customers = db
+//             .collection('users')
+//             .findOne({ email: email })
+//             .then((doc) => resolve(doc))
+//             .catch((err) => reject(err));
+//     })
+// }
+
+// // update - deposit/withdraw amount
+// function update(email, amount) {
+//     return new Promise((resolve, reject) => {
+//         const customers = db
+//             .collection('users')
+//             .findOneAndUpdate(
+//                 { email: email },
+//                 { $inc: { balance: amount } },
+//                 { returnOriginal: false },
+//                 function (err, documents) {
+//                     err ? reject(err) : resolve(documents);
+//                 }
+//             );
+
+
+//     });
+// }
+
+// // return all users by using the collection.find method
+// function all() {
+//     // TODO: populate this function based off the video
+//     return new Promise((resolve, reject) => {
+//         const customers = db
+//             .collection('users')
+//             .find({})
+//             .toArray(function(err, docs) {
+//                 err ? reject(err) : resolve(docs);
+//             });
+//     })
+// }
+
+
+// module.exports = { create, findOne, find, update, all };
+//--
 
 const { MongoClient } = require('mongodb');
-
-const client = new MongoClient(uri);
+const url = process.env.MONGODB_URI || "mongodb://localhost:27017";
+const client = new MongoClient(url);
+let db = null;
 
 async function connectToDatabase() {
   try {
     await client.connect();
     console.log("Connected successfully to MongoDB");
+    db = client.db('fullbank'); // Initialize the database connection here
   } catch (error) {
     console.error("Failed to connect to MongoDB", error);
   }
@@ -169,74 +259,77 @@ async function connectToDatabase() {
 
 connectToDatabase();
 
-// Use this client to access the database
-const db = client.db('fullbank');
-
-// create user account using the collection.insertOne function
+// Create user account
 function create(name, email, password) {
-    // TODO: populate this function based off the video
-    return new Promise((resolve, reject) => {
-        const collection = db.collection('users');
-        const doc = {name, email, password, balance:0};
-        collection.insertOne(doc, {w:1}, function(err, result) {
-            err ? reject(err) : resolve(doc);
-        });
-    }) 
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      return reject(new Error('Database not initialized'));
+    }
+    const collection = db.collection('users');
+    const doc = { name, email, password, balance: 0 };
+    collection.insertOne(doc)
+      .then(result => resolve(doc))
+      .catch(err => reject(err));
+  });
 }
 
-// find user account 
+// Find user account by email
 function find(email) {
-    return new Promise((resolve, reject) => {
-        const customers = db
-            .collection('users')
-            .find({ email: email })
-            .toArray(function (err, docs) {
-                err ? reject(err) : resolve(docs);
-            });
-    })
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      return reject(new Error('Database not initialized'));
+    }
+    db.collection('users')
+      .find({ email: email })
+      .toArray()
+      .then(docs => resolve(docs))
+      .catch(err => reject(err));
+  });
 }
 
-// find user account
+// Find a single user account by email
 function findOne(email) {
-    return new Promise((resolve, reject) => {
-        const customers = db
-            .collection('users')
-            .findOne({ email: email })
-            .then((doc) => resolve(doc))
-            .catch((err) => reject(err));
-    })
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      return reject(new Error('Database not initialized'));
+    }
+    db.collection('users')
+      .findOne({ email: email })
+      .then(doc => resolve(doc))
+      .catch(err => reject(err));
+  });
 }
 
-// update - deposit/withdraw amount
+// Update user balance (deposit/withdraw)
 function update(email, amount) {
-    return new Promise((resolve, reject) => {
-        const customers = db
-            .collection('users')
-            .findOneAndUpdate(
-                { email: email },
-                { $inc: { balance: amount } },
-                { returnOriginal: false },
-                function (err, documents) {
-                    err ? reject(err) : resolve(documents);
-                }
-            );
-
-
-    });
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      return reject(new Error('Database not initialized'));
+    }
+    db.collection('users')
+      .findOneAndUpdate(
+        { email: email },
+        { $inc: { balance: amount } },
+        { returnDocument: 'after' } // Use returnDocument instead of returnOriginal
+      )
+      .then(result => resolve(result.value))
+      .catch(err => reject(err));
+  });
 }
 
-// return all users by using the collection.find method
+// Return all users
 function all() {
-    // TODO: populate this function based off the video
-    return new Promise((resolve, reject) => {
-        const customers = db
-            .collection('users')
-            .find({})
-            .toArray(function(err, docs) {
-                err ? reject(err) : resolve(docs);
-            });
-    })
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      return reject(new Error('Database not initialized'));
+    }
+    db.collection('users')
+      .find({})
+      .toArray()
+      .then(docs => resolve(docs))
+      .catch(err => reject(err));
+  });
 }
-
 
 module.exports = { create, findOne, find, update, all };
+

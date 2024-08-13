@@ -772,7 +772,7 @@ function WithdrawForm(props) {
 
     try {
       const url = `/account/update/${ctx.user.email}/-${amount}`;
-      const res = await fetch(url, { method: 'PATCH' });
+      const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`HTTP error! Status: ${res.status}`);
       }

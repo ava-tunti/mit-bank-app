@@ -375,7 +375,6 @@ function WithdrawForm(props) {
   return (
     <>
       {error && <div className="alert alert-danger">{error}</div>}
-      // {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
       
       Amount<br/>
       <input type="number" 

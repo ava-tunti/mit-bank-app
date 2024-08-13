@@ -366,7 +366,7 @@ function Deposit() {
           balance: data.balance
         }));
       } catch (err) {
-        setStatus('Failed to fetch balance');
+        // setStatus('Failed to fetch balance');
         console.log('err:', text);
       }
     }
@@ -390,7 +390,7 @@ function Deposit() {
         balance: data.balance
       }));
     } catch (err) {
-      setStatus('Failed to fetch balance');
+      // setStatus('Failed to fetch balance');
       console.log('err:', text);
     }
   };
@@ -449,8 +449,8 @@ function DepositForm(props) {
       await props.updateBalance();
       console.log('JSON:', data);
     } catch (err) {
-      props.setStatus('Deposit failed');
-      setError('Deposit failed. Please try again.');
+      // props.setStatus('Deposit failed');
+      // setError('Deposit failed. Please try again.');
       console.log('err:', text);
     }
   }
@@ -458,7 +458,6 @@ function DepositForm(props) {
   return (
     <>
       {error && <div className="alert alert-danger">{error}</div>}
-      {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
       
       Amount<br/>
       <input type="number" 

@@ -777,7 +777,9 @@ function WithdrawForm(props) {
         throw new Error(`HTTP error! Status: ${res.status}`);
       }
       const text = await res.text();
+      console.log(text);
       const data = JSON.parse(text);
+      console.log(data);
 
       // Check if the response indicates success
       if (data.success) {

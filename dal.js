@@ -78,7 +78,8 @@
 // module.exports = { create, findOne, find, update, all };
 
 const MongoClient = require('mongodb').MongoClient;
-const url = process.env.MONGODB_URI || "mongodb://localhost:27017";
+const url = process.env.MONGODB_URI || "mongodb+srv://avaananda:3qRUmG3QkMbFMx2T@fullbankapp.pr2f6.mongodb.net/?retryWrites=true&w=majority&appName=fullbankapp
+" || "mongodb://localhost:27017";
 let db = null;
 
 // connect to mongo
@@ -86,7 +87,7 @@ async function connectToDatabase() {
     if (!db) {
         const client = await MongoClient.connect(url, { useUnifiedTopology: true });
         console.log("Connected successfully to db server");
-        db = client.db('myproject');
+        db = client.db('fullbankapp');
     }
 }
 

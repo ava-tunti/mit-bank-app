@@ -154,13 +154,23 @@ const MongoClient = require('mongodb').MongoClient;
 const url = process.env.MONGODB_URI || "mongodb://localhost:27017";
 let db = null;
 
-// connect to mongo
-MongoClient.connect(url, function (err, client) {
-    console.log("Connected successfully to db server");
+const { MongoClient } = require('mongodb');
 
-    // connect to myproject database
-    db = client.db('fullbank');
-});
+const client = new MongoClient(uri);
+
+async function connectToDatabase() {
+  try {
+    await client.connect();
+    console.log("Connected successfully to MongoDB");
+  } catch (error) {
+    console.error("Failed to connect to MongoDB", error);
+  }
+}
+
+connectToDatabase();
+
+// Use this client to access the database
+const db = client.db('fullbank');
 
 // create user account using the collection.insertOne function
 function create(name, email, password) {

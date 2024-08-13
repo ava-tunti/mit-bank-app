@@ -605,7 +605,7 @@ function WithdrawForm(props) {
 
   async function handle() {
     setError(''); // Reset error state before each operation
-
+  
     if (!ctx.user.email) {
       setError('User email is not available.');
       return;
@@ -618,16 +618,30 @@ function WithdrawForm(props) {
       setError('Insufficient balance.');
       return;
     }
-
+  
     try {
-      const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`);
+      const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`, { method: 'PATCH' });
+  
       if (!res.ok) {
         throw new Error(`HTTP error! Status: ${res.status}`);
       }
-
+  
+      // Read the response text and check if it's empty
       const text = await res.text();
-      const data = JSON.parse(text);
-
+      
+      // If the response is empty, handle it accordingly
+      if (text.trim() === '') {
+        throw new Error('No response from the server.');
+      }
+  
+      // Try to parse the response
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        throw new Error('Invalid JSON response from the server.');
+      }
+  
       // Check if the response indicates success
       if (data.success) {
         props.setStatus(`Withdrawal of $${amount} was successful.`);
@@ -644,6 +658,7 @@ function WithdrawForm(props) {
       console.log('Error during withdrawal:', err.message);
     }
   }
+
 
   return (
     <>

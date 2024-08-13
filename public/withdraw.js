@@ -257,81 +257,81 @@
 
 
 // MOST UPDATED WORKING ONE AUG 9
-// function Withdraw() {
-//   const [show, setShow] = React.useState(true);
-//   const [status, setStatus] = React.useState('');
-//   const [balance, setBalance] = React.useState(null);
-//   const ctx = React.useContext(UserContext);
+function Withdraw() {
+  const [show, setShow] = React.useState(true);
+  const [status, setStatus] = React.useState('');
+  const [balance, setBalance] = React.useState(null);
+  const ctx = React.useContext(UserContext);
 
-//   React.useEffect(() => {
-//     async function fetchBalance() {
-//       const url = `/account/findOne/${ctx.user.email}`;
-//       const res = await fetch(url);
-//       const text = await res.text();
+  React.useEffect(() => {
+    async function fetchBalance() {
+      const url = `/account/findOne/${ctx.user.email}`;
+      const res = await fetch(url);
+      const text = await res.text();
       
-//       try {
-//         const data = JSON.parse(text);
-//         setBalance(data.balance);
-//         // Update context with the fetched balance
-//         ctx.setUser(prevUser => ({
-//           ...prevUser,
-//           balance: data.balance
-//         }));
-//       } catch (err) {
-//         setStatus('Failed to fetch balance');
-//         console.log('err:', text);
-//       }
-//     }
+      try {
+        const data = JSON.parse(text);
+        setBalance(data.balance);
+        // Update context with the fetched balance
+        ctx.setUser(prevUser => ({
+          ...prevUser,
+          balance: data.balance
+        }));
+      } catch (err) {
+        setStatus('Failed to fetch balance');
+        console.log('err:', text);
+      }
+    }
     
-//     if (ctx.user.email) {
-//       fetchBalance();
-//     }
-//   }, [ctx.user.email]);
+    if (ctx.user.email) {
+      fetchBalance();
+    }
+  }, [ctx.user.email]);
 
-//   const updateBalance = async () => {
-//     const url = `/account/findOne/${ctx.user.email}`;
-//     const res = await fetch(url);
-//     const text = await res.text();
+  const updateBalance = async () => {
+    const url = `/account/findOne/${ctx.user.email}`;
+    const res = await fetch(url);
+    const text = await res.text();
     
-//     try {
-//       const data = JSON.parse(text);
-//       setBalance(data.balance);
-//       // Update context with the fetched balance
-//       ctx.setUser(prevUser => ({
-//         ...prevUser,
-//         balance: data.balance
-//       }));
-//     } catch (err) {
-//       setStatus('Failed to fetch balance');
-//       console.log('err:', text);
-//     }
-//   };
+    try {
+      const data = JSON.parse(text);
+      setBalance(data.balance);
+      // Update context with the fetched balance
+      ctx.setUser(prevUser => ({
+        ...prevUser,
+        balance: data.balance
+      }));
+    } catch (err) {
+      setStatus('Failed to fetch balance');
+      console.log('err:', text);
+    }
+  };
 
-//   return (
-//     <Card
-//       customBgColor="#3E4F85"
-//       header="Withdraw"
-//       status={status}
-//       body={show ? 
-//         <WithdrawForm setShow={setShow} setStatus={setStatus} balance={balance} updateBalance={updateBalance} /> :
-//         <WithdrawMsg setShow={setShow} setStatus={setStatus} />}
-//     />
-//   );
-// }
+  return (
+    <Card
+      customBgColor="#3E4F85"
+      header="Withdraw"
+      status={status}
+      body={show ? 
+        <WithdrawForm setShow={setShow} setStatus={setStatus} balance={balance} updateBalance={updateBalance} /> :
+        <WithdrawMsg setShow={setShow} setStatus={setStatus} />}
+    />
+  );
+}
 
-// function WithdrawMsg(props) {
-//   return (
-//     <>
-//       <h5>Success</h5>
-//       <button type="submit" className="btn btn-light" onClick={() => {
-//         props.setShow(true);
-//         props.setStatus('');
-//       }}>
-//         Withdraw again
-//       </button>
-//     </>
-//   );
-// }
+function WithdrawMsg(props) {
+  return (
+    <>
+      <h5>Success</h5>
+      <button type="submit" className="btn btn-light" onClick={() => {
+        props.setShow(true);
+        props.setStatus('');
+      }}>
+        Withdraw again
+      </button>
+    </>
+  );
+}
 
 // function WithdrawForm(props) {
 //   const [amount, setAmount] = React.useState('');
@@ -369,23 +369,89 @@
 //     }
 //   }
 
-//   return (
-//     <>
-//       {error && <div className="alert alert-danger">{error}</div>}
-//       {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
+function WithdrawForm(props) {
+  const [amount, setAmount] = React.useState('');
+  const [error, setError] = React.useState('');
+  const ctx = React.useContext(UserContext);
+
+  async function handle() {
+    setError(''); // Reset error state before each operation
+
+    if (!ctx.user.email) {
+      setError('User email is not available.');
+      return;
+    }
+    if (amount <= 0) {
+      setError('Please enter a valid amount.');
+      return;
+    }
+    if (amount > props.balance) {
+      setError('Insufficient balance.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`, { method: 'PATCH' });
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+
+      const text = await res.text();
+      const data = JSON.parse(text);
+
+      // Check if the response indicates success
+      if (data.success) {
+        props.setStatus(`Withdrawal of $${amount} was successful.`);
+        props.setShow(false);
+        await props.updateBalance();
+        console.log('JSON:', data);
+      } else {
+        throw new Error('Withdrawal failed due to server response.');
+      }
+    } catch (err) {
+      // Handle errors appropriately
+      props.setStatus('Withdraw failed');
+      setError('Withdraw failed. Please try again.');
+      console.log('Error during withdrawal:', err.message);
+    }
+  }
+
+  return (
+    <>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
       
-//       Amount<br/>
-//       <input type="number" 
-//         className="form-control" 
-//         placeholder="Enter amount" 
-//         value={amount} onChange={e => setAmount(e.currentTarget.value)} /><br />
+      Amount<br/>
+      <input type="number" 
+        className="form-control" 
+        placeholder="Enter amount" 
+        value={amount} onChange={e => setAmount(e.currentTarget.value)} /><br />
       
-//       <button type="submit" className="btn btn-light" onClick={handle}>
-//         Withdraw
-//       </button>
-//     </>
-//   );
-// }
+      <button type="submit" className="btn btn-light" onClick={handle}>
+        Withdraw
+      </button>
+    </>
+  );
+}
+
+
+  return (
+    <>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
+      
+      Amount<br/>
+      <input type="number" 
+        className="form-control" 
+        placeholder="Enter amount" 
+        value={amount} onChange={e => setAmount(e.currentTarget.value)} /><br />
+      
+      <button type="submit" className="btn btn-light" onClick={handle}>
+        Withdraw
+      </button>
+    </>
+  );
+}
 // MOST UPDATED WORKING ONE AUG 9 ^
 // function Withdraw() {
 //   const [show, setShow] = React.useState(true);
@@ -519,67 +585,3 @@
 
 //--
 
-function WithdrawForm(props) {
-  const [amount, setAmount] = React.useState('');
-  const [error, setError] = React.useState('');
-  const ctx = React.useContext(UserContext);
-
-  async function handle() {
-    setError(''); // Reset error state before each operation
-
-    if (!ctx.user.email) {
-      setError('User email is not available.');
-      return;
-    }
-    if (amount <= 0) {
-      setError('Please enter a valid amount.');
-      return;
-    }
-    if (amount > props.balance) {
-      setError('Insufficient balance.');
-      return;
-    }
-
-    try {
-      const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`, { method: 'PATCH' });
-      if (!res.ok) {
-        throw new Error(`HTTP error! Status: ${res.status}`);
-      }
-
-      const text = await res.text();
-      const data = JSON.parse(text);
-
-      // Check if the response indicates success
-      if (data.success) {
-        props.setStatus(`Withdrawal of $${amount} was successful.`);
-        props.setShow(false);
-        await props.updateBalance();
-        console.log('JSON:', data);
-      } else {
-        throw new Error('Withdrawal failed due to server response.');
-      }
-    } catch (err) {
-      // Handle errors appropriately
-      props.setStatus('Withdraw failed');
-      setError('Withdraw failed. Please try again.');
-      console.log('Error during withdrawal:', err.message);
-    }
-  }
-
-  return (
-    <>
-      {error && <div className="alert alert-danger">{error}</div>}
-      {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
-      
-      Amount<br/>
-      <input type="number" 
-        className="form-control" 
-        placeholder="Enter amount" 
-        value={amount} onChange={e => setAmount(e.currentTarget.value)} /><br />
-      
-      <button type="submit" className="btn btn-light" onClick={handle}>
-        Withdraw
-      </button>
-    </>
-  );
-}

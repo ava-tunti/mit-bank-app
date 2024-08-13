@@ -601,7 +601,37 @@ function WithdrawForm(props) {
   const [error, setError] = React.useState('');
   const ctx = React.useContext(UserContext);
 
-  async function handle() {
+  // async function handle() {
+  //   if (!ctx.user.email) {
+  //     setError('User email is not available.');
+  //     return;
+  //   }
+  //   if (amount <= 0) {
+  //     setError('Please enter a valid amount.');
+  //     return;
+  //   }
+  //   if (amount > props.balance) {
+  //     setError('Insufficient balance.');
+  //     return;
+  //   }
+
+  //   const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`);
+  //   const text = await res.text();
+    
+  //   try {
+  //     const data = JSON.parse(text);
+  //     props.setStatus(`Withdrawal of $${amount} was successful.`);
+  //     props.setShow(false);
+  //     // Update both the local state and context
+  //     await props.updateBalance();
+  //     console.log('JSON:', data);
+  //   } catch (err) {
+  //     props.setStatus('Withdraw failed');
+  //     setError('Withdraw failed. Please try again.');
+  //     console.log('err:', text);
+  //   }
+  // }
+    async function handle() {
     if (!ctx.user.email) {
       setError('User email is not available.');
       return;
@@ -614,38 +644,44 @@ function WithdrawForm(props) {
       setError('Insufficient balance.');
       return;
     }
-
-    const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`);
-    const text = await res.text();
-    
+  
     try {
+      const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`, { method: 'POST' });
+  
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+  
+      const text = await res.text();
       const data = JSON.parse(text);
+  
       props.setStatus(`Withdrawal of $${amount} was successful.`);
       props.setShow(false);
-      // Update both the local state and context
       await props.updateBalance();
       console.log('JSON:', data);
+  
     } catch (err) {
       props.setStatus('Withdraw failed');
-      setError('Withdraw failed. Please try again.');
-      console.log('err:', text);
+      setError(`Withdraw failed: ${err.message}`);
+      console.log('Error:', err);
     }
   }
-
-  return (
-    <>
-      {error && <div className="alert alert-danger">{error}</div>}
-      {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
-      
-      Amount<br/>
-      <input type="number" 
-        className="form-control" 
-        placeholder="Enter amount" 
-        value={amount} onChange={e => setAmount(e.currentTarget.value)} /><br />
-      
-      <button type="submit" className="btn btn-light" onClick={handle}>
-        Withdraw
-      </button>
-    </>
-  );
-}
+  
+  
+    return (
+      <>
+        {error && <div className="alert alert-danger">{error}</div>}
+        {props.balance !== null && <div>Current Balance: ${props.balance}</div>}
+        
+        Amount<br/>
+        <input type="number" 
+          className="form-control" 
+          placeholder="Enter amount" 
+          value={amount} onChange={e => setAmount(e.currentTarget.value)} /><br />
+        
+        <button type="submit" className="btn btn-light" onClick={handle}>
+          Withdraw
+        </button>
+      </>
+    );
+  }

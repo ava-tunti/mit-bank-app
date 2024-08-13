@@ -95,6 +95,7 @@ async function connectToDatabase() {
     const client = await MongoClient.connect(url, {
       // useNewUrlParser: true,
       useUnifiedTopology: true,
+      tls: true
     });
     db = client.db("fullbankapp");
     console.log("Connected to MongoDB");

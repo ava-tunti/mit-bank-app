@@ -618,9 +618,10 @@ function WithdrawForm(props) {
       setError('Insufficient balance.');
       return;
     }
+    
+    var res = await fetch(`/account/update/${ctx.user.email}/-${amount}`);
   
     try {
-      const res = await fetch(`/account/update/${ctx.user.email}/-${amount}`, { method: 'PATCH' });
   
       if (!res.ok) {
         throw new Error(`HTTP error! Status: ${res.status}`);

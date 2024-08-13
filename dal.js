@@ -86,7 +86,7 @@ async function connectToDatabase() {
     if (!db) {
         const client = await MongoClient.connect(url, { useUnifiedTopology: true });
         console.log("Connected successfully to db server");
-        db = client.db('fullbankapp');
+        db = client.db('fullbankapp.fullbankcollection');
     }
 }
 

@@ -155,7 +155,7 @@ const url = process.env.MONGODB_URI || "mongodb://localhost:27017";
 let db = null;
 
 // connect to mongo
-MongoClient.connect(url, { useUnifiedTopology: true }, function (err, client) {
+MongoClient.connect(url, function (err, client) {
     console.log("Connected successfully to db server");
 
     // connect to myproject database
